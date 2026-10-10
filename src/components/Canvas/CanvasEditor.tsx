@@ -540,22 +540,24 @@ export function CanvasEditor() {
       {/* Empty State Overlay: Click directly to pick photos! */}
       {objects.length === 0 && (
         <div
-          className="canvas-empty-overlay"
+          className={`canvas-empty-overlay ${paperSize === 'A5' ? 'is-a5' : ''}`}
           onClick={() => fileInputRef.current?.click()}
           title="Bấm vào đây để chọn ảnh từ máy tính"
         >
-          <div className="canvas-empty-content">
-            <span className="canvas-empty-icon">📷</span>
+          <div className={`canvas-empty-content ${paperSize === 'A5' ? 'is-a5' : ''}`}>
+            <span className="canvas-empty-icon">{paperSize === 'A5' ? '📄' : '📷'}</span>
             <span className="canvas-empty-text">
-              Bấm vào đây để chọn ảnh từ máy tính
+              {paperSize === 'A5' ? 'Thêm ảnh vào giấy A5' : 'Bấm vào đây để chọn ảnh từ máy tính'}
             </span>
             <span className="canvas-empty-hint">
-              hoặc kéo thả ảnh trực tiếp vào tờ giấy này • Khổ {paperSize} ({paper.widthMm / 10} × {paper.heightMm / 10} cm)
+              {paperSize === 'A5'
+                ? `Khổ A5 (${paper.widthMm / 10} × ${paper.heightMm / 10} cm) • Bấm để mở ảnh`
+                : `hoặc kéo thả ảnh trực tiếp vào tờ giấy này • Khổ ${paperSize} (${paper.widthMm / 10} × ${paper.heightMm / 10} cm)`}
             </span>
             <button
               type="button"
-              className="btn btn-primary btn-md"
-              style={{ marginTop: '8px', pointerEvents: 'none' }}
+              className={`btn btn-primary ${paperSize === 'A5' ? 'btn-sm' : 'btn-md'}`}
+              style={{ marginTop: paperSize === 'A5' ? '4px' : '8px', pointerEvents: 'none' }}
             >
               📂 Mở ảnh ngay
             </button>

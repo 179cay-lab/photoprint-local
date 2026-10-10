@@ -108,6 +108,20 @@ export function Header() {
     }
   };
 
+  const easyMode = useProjectStore((s) => s.easyMode);
+  const toggleEasyMode = useProjectStore((s) => s.toggleEasyMode);
+
+  const [showGuide, setShowGuide] = useState<boolean>(false);
+
+  // Sync body class for easyMode on initial load
+  useEffect(() => {
+    if (easyMode) {
+      document.body.classList.add('easy-mode');
+    } else {
+      document.body.classList.remove('easy-mode');
+    }
+  }, [easyMode]);
+
   return (
     <header className="header">
       <div className="header-left">
@@ -199,7 +213,28 @@ export function Header() {
         </button>
       </div>
 
-      <div className="header-right" style={{ gap: '8px' }}>
+      <div className="header-right" style={{ gap: '6px' }}>
+        {/* Easy Mode Toggle for Seniors */}
+        <button
+          type="button"
+          className={`btn btn-sm ${easyMode ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={toggleEasyMode}
+          title="Bật/Tắt chế độ cỡ chữ to và nút to dễ nhìn cho người lớn tuổi"
+          style={{ fontWeight: 600 }}
+        >
+          👓 {easyMode ? 'Chữ to' : 'Dễ nhìn'}
+        </button>
+
+        {/* Quick Guide Button */}
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          onClick={() => setShowGuide(true)}
+          title="Xem hướng dẫn in ảnh 3 bước đơn giản"
+        >
+          ❓ Hướng dẫn
+        </button>
+
         <span className="object-count">
           {objects.length > 0 ? `${objects.length} ảnh` : ''}
         </span>
@@ -223,6 +258,65 @@ export function Header() {
           )}
         </button>
       </div>
+
+      {/* Senior-Friendly Quick Guide Modal */}
+      {showGuide && (
+        <div className="modal-overlay" onClick={() => setShowGuide(false)}>
+          <div className="modal-card" style={{ maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">📖 Hướng Dẫn In Ảnh 3 Bước Cực Dễ</span>
+              <button
+                type="button"
+                className="btn-icon"
+                onClick={() => setShowGuide(false)}
+                style={{ fontSize: '18px' }}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '24px', background: 'var(--primary-light)', padding: '6px 12px', borderRadius: '50%' }}>1</span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '15px' }}>Bấm nút 📷 "Thêm ảnh"</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    Bấm vào nút màu xanh ở góc trái (hoặc kéo thả ảnh từ máy tính vào tờ giấy).
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '24px', background: 'var(--primary-light)', padding: '6px 12px', borderRadius: '50%' }}>2</span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '15px' }}>Chọn cỡ ảnh & Xếp kín giấy</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    Chọn kích thước ảnh thẻ (3×4, 4×6 cm...) hoặc bấm <strong>"✨ Xếp kín trang giấy"</strong> để máy tự nhân bản đầy tờ A4/A5.
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '24px', background: 'var(--primary-light)', padding: '6px 12px', borderRadius: '50%' }}>3</span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '15px' }}>Bấm nút 🖨️ "In"</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                    Bấm nút In ở thanh trên cùng, chọn máy in Epson và bấm Print để in ra giấy!
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ background: 'var(--bg)', padding: '10px 12px', borderRadius: 'var(--radius-sm)', fontSize: '12px', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                💡 <strong>Mẹo hay:</strong> Bạn có thể bật nút <strong>"👓 Dễ nhìn"</strong> để phóng to cỡ chữ cho dễ bấm.
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-primary" onClick={() => setShowGuide(false)}>
+                ✓ Đã hiểu, bắt đầu in!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

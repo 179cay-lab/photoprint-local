@@ -51,6 +51,11 @@ interface ProjectState {
   setSpacingMm: (spacing: number) => void;
   runAutoLayout: () => void;
   autoFitSpacing: () => void;
+  fillPaper: () => void;
+
+  // Senior / Easy Mode
+  easyMode: boolean;
+  toggleEasyMode: () => void;
 
   // Safe Margin (Lề an toàn)
   marginEnabled: boolean;
@@ -422,6 +427,80 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     );
     state.setSpacingMm(optimal);
     state.runAutoLayout();
+  },
+
+  fillPaper: () => {
+    const state = get();
+    if (state.objects.length === 0) {
+      state.showToast('Vui lòng thêm ít nhất 1 ảnh để xếp kín giấy');
+      return;
+    }
+    const target =
+      state.selectedObjectIds.length > 0
+        ? state.objects.find((o) => state.selectedObjectIds.includes(o.id))
+        : state.selectedObjectId
+        ? state.objects.find((o) => o.id === state.selectedObjectId)
+        : state.objects[0];
+
+    if (!target) return;
+
+    state.pushUndo();
+    const paper = PAPER_SIZES[state.paperSize];
+    const margin = state.marginEnabled ? state.marginMm : 0;
+    const spacing = state.spacingMm;
+    const usableW = Math.max(10, paper.widthMm - 2 * margin);
+    const usableH = Math.max(10, paper.heightMm - 2 * margin);
+
+    const w = target.widthMm;
+    const h = target.heightMm;
+
+    const cols = Math.max(1, Math.floor((usableW + spacing) / (w + spacing)));
+    const rows = Math.max(1, Math.floor((usableH + spacing) / (h + spacing)));
+    const totalCount = cols * rows;
+
+    const gridW = cols * w + (cols - 1) * spacing;
+    const gridH = rows * h + (rows - 1) * spacing;
+    const startX = margin + (usableW - gridW) / 2;
+    const startY = margin + (usableH - gridH) / 2;
+
+    const newObjects: PrintObject[] = [];
+    const newIds: string[] = [];
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const id = r === 0 && c === 0 ? target.id : uuidv4();
+        newIds.push(id);
+        newObjects.push({
+          ...target,
+          id,
+          xMm: parseFloat((startX + c * (w + spacing)).toFixed(2)),
+          yMm: parseFloat((startY + r * (h + spacing)).toFixed(2)),
+          rotation: 0,
+        });
+      }
+    }
+
+    set({
+      objects: newObjects,
+      selectedObjectId: newIds[0],
+      selectedObjectIds: newIds,
+    });
+    state.showToast(`✨ Đã xếp kín ${totalCount} ảnh (${cols}×${rows}) trên khổ ${state.paperSize}!`);
+  },
+
+  // ---- Senior / Easy Mode ----
+  easyMode: localStorage.getItem('photoprint_easyMode') === 'true',
+  toggleEasyMode: () => {
+    const next = !get().easyMode;
+    localStorage.setItem('photoprint_easyMode', String(next));
+    set({ easyMode: next });
+    if (next) {
+      document.body.classList.add('easy-mode');
+      get().showToast('👓 Đã bật Chế độ Dễ nhìn (Chữ to, Nút to)');
+    } else {
+      document.body.classList.remove('easy-mode');
+      get().showToast('Đã tắt Chế độ Dễ nhìn');
+    }
   },
 
   // ---- Photoshop-style Align & Distribute ----

@@ -143,6 +143,27 @@
   line-height: 1.4;
 }
 
+/* Compact style for A5 paper */
+.canvas-empty-content.is-a5 {
+  max-width: 250px;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  gap: var(--space-1);
+}
+
+.canvas-empty-content.is-a5 .canvas-empty-icon {
+  font-size: 26px;
+}
+
+.canvas-empty-content.is-a5 .canvas-empty-text {
+  font-size: var(--text-sm);
+}
+
+.canvas-empty-content.is-a5 .canvas-empty-hint {
+  font-size: 11px;
+}
+
+
 /* Bottom Bar */
 .bottom-bar {
   height: var(--bottom-bar-height);

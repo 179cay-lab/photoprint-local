@@ -20,6 +20,8 @@ export function LeftSidebar() {
   const pushUndo = useProjectStore((s) => s.pushUndo);
   const showToast = useProjectStore((s) => s.showToast);
   const runAutoLayout = useProjectStore((s) => s.runAutoLayout);
+  const fillPaper = useProjectStore((s) => s.fillPaper);
+  const paperSize = useProjectStore((s) => s.paperSize);
 
   const targetIds =
     selectedObjectIds && selectedObjectIds.length > 0
@@ -185,14 +187,25 @@ export function LeftSidebar() {
 
       <div className="divider" />
 
-      {/* Auto Layout */}
-      <div className="sidebar-section">
+      {/* Auto Layout & One-Click Fill Paper */}
+      <div className="sidebar-section" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <button
-          className="btn btn-secondary btn-block"
+          type="button"
+          className="btn btn-primary btn-block"
+          onClick={fillPaper}
+          disabled={objects.length === 0}
+          title={`Tự động tính toán nhân bản xếp đầy kín tờ giấy ${paperSize}`}
+          style={{ background: 'linear-gradient(135deg, var(--primary), #7c3aed)', color: '#fff', fontWeight: 600 }}
+        >
+          ✨ Xếp kín trang giấy ({paperSize})
+        </button>
+        <button
+          className="btn btn-secondary btn-block btn-sm"
           onClick={runAutoLayout}
           disabled={objects.length === 0}
+          title="Căn xếp lại vị trí các ảnh hiện có ngay hàng thẳng lối"
         >
-          📐 Tự động xếp
+          📐 Căn đều ảnh hiện có
         </button>
       </div>
 

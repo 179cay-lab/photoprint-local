@@ -45,15 +45,17 @@ export function RightSidebar() {
   const [showColorAdjust, setShowColorAdjust] = useState(false);
 
   const handleSaveDefault = () => {
+    localStorage.setItem('photoprint_paperSize', paperSize);
     localStorage.setItem('photoprint_borderEnabled', String(borderEnabled));
     localStorage.setItem('photoprint_borderWidthMm', String(borderWidthMm));
     localStorage.setItem('photoprint_borderColor', borderColor);
     localStorage.setItem('photoprint_marginEnabled', String(marginEnabled));
     localStorage.setItem('photoprint_marginMm', String(marginMm));
     localStorage.setItem('photoprint_spacing', String(spacingMm));
-    showToast('Đã lưu cấu hình lề và viền làm mặc định');
+    localStorage.setItem('photoprint_lockRatio', String(lockRatio));
+    showToast('✓ Đã lưu tất cả cài đặt (Khổ giấy, Lề, Viền, Khoảng cách) làm mặc định!');
     setSavedToast(true);
-    setTimeout(() => setSavedToast(false), 2000);
+    setTimeout(() => setSavedToast(false), 2500);
   };
 
   const selectedObj = objects.find((o) => o.id === selectedObjectId);
@@ -218,14 +220,43 @@ export function RightSidebar() {
               ))}
             </div>
           </div>
+        </div>
 
-          <button
-            className="btn btn-secondary btn-sm btn-block"
-            style={{ marginTop: '8px' }}
-            onClick={handleSaveDefault}
-            title="Lưu các thông số viền và lề này làm mặc định cho các lần sau"
+        <div className="divider" />
+
+        {/* Global Save Default Section */}
+        <div className="sidebar-section">
+          <div className="label">Cài đặt mặc định của bạn</div>
+          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '0 0 8px' }}>
+            Lưu khổ giấy, lề, viền và khoảng cách hiện tại để lần sau mở app tự động áp dụng.
+          </p>
+          <div
+            style={{
+              background: 'var(--bg)',
+              padding: '8px 10px',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '11px',
+              color: 'var(--text-secondary)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+              marginBottom: '8px',
+              border: '1px solid var(--border)',
+            }}
           >
-            {savedToast ? '✓ Đã lưu cài đặt!' : '💾 Lưu làm mặc định'}
+            <div>• Khổ giấy: <strong>{paperSize}</strong></div>
+            <div>• Lề bảo vệ: <strong>{marginEnabled ? `${marginCm} cm` : 'Tắt'}</strong></div>
+            <div>• Viền cắt: <strong>{borderEnabled ? `${borderWidthMm} mm` : 'Tắt'}</strong></div>
+            <div>• Khoảng cách: <strong>{spacingCm} cm</strong></div>
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary btn-block btn-sm"
+            onClick={handleSaveDefault}
+            title="Lưu tất cả cấu hình trên làm mặc định"
+            style={{ fontWeight: 600 }}
+          >
+            {savedToast ? '✓ Đã lưu làm mặc định!' : '💾 Lưu tất cả làm mặc định'}
           </button>
         </div>
 
