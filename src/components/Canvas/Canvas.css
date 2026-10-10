@@ -1,0 +1,245 @@
+/* ============================================================
+   Canvas Editor, Ruler & Bottom Bar Styles
+   ============================================================ */
+
+.canvas-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: var(--canvas-bg);
+  user-select: none;
+}
+
+.canvas-scroll-area {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  position: relative;
+}
+
+/* Paper Board (Rulers + Corner + Paper Sheet combined) */
+.canvas-paper-board {
+  display: grid;
+  grid-template-columns: var(--ruler-size) auto;
+  grid-template-rows: var(--ruler-size) auto;
+  margin: auto;
+  background: var(--paper);
+  box-shadow: var(--paper-shadow);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Top-left Corner Cell */
+.ruler-corner {
+  grid-column: 1;
+  grid-row: 1;
+  width: var(--ruler-size);
+  height: var(--ruler-size);
+  background: var(--ruler-bg);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  user-select: none;
+  border-top-left-radius: var(--radius-sm);
+}
+
+/* Horizontal Ruler along top of paper */
+.ruler-horizontal {
+  grid-column: 2;
+  grid-row: 1;
+  height: var(--ruler-size);
+  background: var(--ruler-bg);
+  border-bottom: 1px solid var(--border);
+  border-top-right-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Vertical Ruler along left of paper */
+.ruler-vertical {
+  grid-column: 1;
+  grid-row: 2;
+  width: var(--ruler-size);
+  background: var(--ruler-bg);
+  border-right: 1px solid var(--border);
+  border-bottom-left-radius: var(--radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.ruler canvas {
+  display: block;
+}
+
+/* The Paper Sheet */
+.canvas-paper {
+  grid-column: 2;
+  grid-row: 2;
+  background: var(--paper);
+  position: relative;
+  overflow: visible;
+  border-bottom-right-radius: var(--radius-sm);
+}
+
+/* Empty State */
+.canvas-empty-overlay {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: var(--space-4);
+}
+
+.canvas-empty-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding: var(--space-6) var(--space-8);
+  border-radius: var(--radius-xl);
+  border: 2px dashed #93c5fd;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  max-width: 420px;
+}
+
+.canvas-empty-overlay:hover .canvas-empty-content {
+  transform: translateY(-3px) scale(1.01);
+  border-color: var(--primary);
+  box-shadow: 0 18px 35px -5px rgba(37, 99, 235, 0.15), 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.canvas-empty-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.canvas-empty-text {
+  font-weight: 700;
+  font-size: var(--text-base);
+  color: var(--text);
+}
+
+.canvas-empty-hint {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Bottom Bar */
+.bottom-bar {
+  height: var(--bottom-bar-height);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-3);
+  flex-shrink: 0;
+  z-index: 15;
+  font-size: var(--text-xs);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+.bottom-bar-left,
+.bottom-bar-center,
+.bottom-bar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.bottom-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.zoom-slider {
+  width: 60px !important;
+}
+
+.bottom-bar-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  min-width: 32px;
+  font-size: 11px;
+}
+
+.bottom-bar-label {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.bottom-bar-info {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.bar-separator {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.align-toolbar {
+  background: var(--bg);
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  gap: 2px !important;
+  display: inline-flex;
+  align-items: center;
+}
+
+.align-toolbar .btn-icon {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.align-toolbar .btn-icon:hover {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 1200px) {
+  .bottom-bar-label {
+    display: none;
+  }
+  .zoom-slider {
+    width: 45px !important;
+  }
+  .bottom-bar-left,
+  .bottom-bar-center,
+  .bottom-bar-right {
+    gap: 4px;
+  }
+}

@@ -1,0 +1,61 @@
+/* ============================================================
+   Print Container Styles (Screen & Print)
+   ============================================================ */
+
+#print-container {
+  display: none;
+}
+
+@media print {
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  #root {
+    display: none !important;
+  }
+
+  #print-container {
+    display: block !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .print-page {
+    box-shadow: none !important;
+    page-break-after: avoid;
+    break-after: avoid;
+    overflow: hidden;
+  }
+}
+
+.print-page {
+  position: relative;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.print-item {
+  position: absolute;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Subtle hairline for clean cutting guides */
+.print-cut-guide {
+  outline: 0.15mm solid rgba(0, 0, 0, 0.2);
+}
+
+.print-image {
+  position: absolute;
+  max-width: none;
+  max-height: none;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
