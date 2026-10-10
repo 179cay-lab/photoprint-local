@@ -149,7 +149,12 @@ export function CanvasEditor() {
       .map((o) => getObjId(o))
       .filter(Boolean) as string[];
 
-    if (canvas.getActiveObject()) {
+    const activeObj = canvas.getActiveObject();
+    const isMultiSelection = activeObj instanceof ActiveSelection;
+
+    // Only discard if multiple objects are grouped into an ActiveSelection
+    // For single object selection, we keep it active so slider dragging doesn't flicker
+    if (isMultiSelection) {
       canvas.discardActiveObject();
     }
 
@@ -244,16 +249,27 @@ export function CanvasEditor() {
           });
         }
 
-        // Color filters
-        if (!isDefaultColor(obj.color)) {
-          const filterStr = colorDataToCSSFilter(obj.color);
-          if (el && el instanceof HTMLImageElement) {
-            el.style.filter = filterStr;
-          }
-        } else {
-          if (el && el instanceof HTMLImageElement) {
-            el.style.filter = 'none';
-          }
+        // Real-time live color filters on canvas
+        const filterStr = !isDefaultColor(obj.color) ? colorDataToCSSFilter(obj.color) : 'none';
+        (targetImg as any)._cssFilter = filterStr;
+        targetImg.objectCaching = false;
+        (targetImg as any).dirty = true;
+
+        if (!(targetImg as any)._hasFilterHook) {
+          (targetImg as any)._hasFilterHook = true;
+          const origRenderFill = (targetImg as any)._renderFill.bind(targetImg);
+          (targetImg as any)._renderFill = function (ctx: CanvasRenderingContext2D) {
+            const filter = (this as any)._cssFilter;
+            const hasFilter = filter && filter !== 'none';
+            if (hasFilter) {
+              const prevFilter = ctx.filter;
+              ctx.filter = filter;
+              origRenderFill(ctx);
+              ctx.filter = prevFilter || 'none';
+            } else {
+              origRenderFill(ctx);
+            }
+          };
         }
 
         targetImg.setCoords();
@@ -309,7 +325,7 @@ export function CanvasEditor() {
           const newSel = new ActiveSelection(toSelect, { canvas });
           canvas.setActiveObject(newSel);
         }
-      } else if (targetIds.length === 1) {
+      } else if (targetIds.length === 1 && !canvas.getActiveObject()) {
         const toSelect = canvas.getObjects().find((fo) => getObjId(fo) === targetIds[0]);
         if (toSelect) {
           canvas.setActiveObject(toSelect);

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useProjectStore } from '../../store/useProjectStore';
 import { mmToCm, cmToMm, calculatePrintDPI } from '../../utils/units';
 import { MIN_PRINT_DPI, PAPER_SIZES } from '../../constants/paper';
-import { PRINT_OPTIMIZE_PRESET, isDefaultColor } from '../../utils/color';
+import { PRINT_OPTIMIZE_PRESET, isDefaultColor, colorDataToCSSFilter } from '../../utils/color';
 import { DEFAULT_COLOR } from '../../types';
 import './Sidebar.css';
 
@@ -592,33 +592,130 @@ export function RightSidebar() {
         </button>
 
         {showColorAdjust && (
-          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {[
-              { key: 'brightness', label: 'Độ sáng' },
-              { key: 'contrast', label: 'Tương phản' },
-              { key: 'saturation', label: 'Độ bão hòa' },
-              { key: 'temperature', label: 'Nhiệt độ màu' },
-            ].map(({ key, label }) => (
-              <div key={key} className="color-slider-row">
-                <div className="color-slider-header">
-                  <span className="color-label">{label}</span>
-                  <span className="color-value">{obj.color[key as keyof typeof obj.color]}</span>
+          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Live comparison thumbnail */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px',
+                background: 'var(--bg)',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '2px' }}>Ảnh gốc</div>
+                <div
+                  style={{
+                    height: '52px',
+                    overflow: 'hidden',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#000',
+                  }}
+                >
+                  <img
+                    src={obj.sourceImageDataUrl}
+                    alt="Original"
+                    style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                  />
                 </div>
-                <input
-                  type="range"
-                  min="-100"
-                  max="100"
-                  value={obj.color[key as keyof typeof obj.color]}
-                  onChange={(e) => handleColorChange(key, parseInt(e.target.value))}
-                  onMouseUp={handleColorChangeCommit}
-                  onTouchEnd={handleColorChangeCommit}
-                />
               </div>
-            ))}
+              <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>➔</div>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <div style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 600, marginBottom: '2px' }}>
+                  Xem trực tiếp
+                </div>
+                <div
+                  style={{
+                    height: '52px',
+                    overflow: 'hidden',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#000',
+                  }}
+                >
+                  <img
+                    src={obj.sourceImageDataUrl}
+                    alt="Filtered"
+                    style={{
+                      maxHeight: '100%',
+                      maxWidth: '100%',
+                      objectFit: 'contain',
+                      filter: colorDataToCSSFilter(obj.color),
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
 
-            <div className="color-actions" style={{ marginTop: '4px' }}>
+            {/* Quick Presets */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
               <button
+                type="button"
                 className="btn btn-secondary btn-sm"
+                style={{ fontSize: '11px', padding: '2px 6px' }}
+                onClick={() => {
+                  pushUndo();
+                  updateObject(obj.id, { color: PRINT_OPTIMIZE_PRESET });
+                  showToast('Đã áp dụng tối ưu in Epson');
+                }}
+                title="Tăng sáng & tương phản nhẹ để bù tối màu mực Epson"
+              >
+                ✨ Chuẩn Epson
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '11px', padding: '2px 6px' }}
+                onClick={() => {
+                  pushUndo();
+                  updateObject(obj.id, {
+                    color: { brightness: 10, contrast: 12, saturation: 8, temperature: 0, highlights: 5, shadows: 5 },
+                  });
+                  showToast('Đã áp dụng bộ lọc Tươi sáng');
+                }}
+              >
+                ☀️ Tươi sáng
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '11px', padding: '2px 6px' }}
+                onClick={() => {
+                  pushUndo();
+                  updateObject(obj.id, {
+                    color: { brightness: 0, contrast: 15, saturation: -100, temperature: 0, highlights: 0, shadows: 0 },
+                  });
+                  showToast('Đã chuyển sang Đen trắng');
+                }}
+              >
+                🖤 Đen trắng
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '11px', padding: '2px 6px' }}
+                onClick={() => {
+                  pushUndo();
+                  updateObject(obj.id, {
+                    color: { brightness: 4, contrast: 6, saturation: 6, temperature: 22, highlights: 0, shadows: 0 },
+                  });
+                  showToast('Đã áp dụng tông Ấm áp');
+                }}
+              >
+                🔥 Ấm áp
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '11px', padding: '2px 6px' }}
                 onClick={() => {
                   pushUndo();
                   updateObject(obj.id, { color: DEFAULT_COLOR });
@@ -626,18 +723,57 @@ export function RightSidebar() {
                 }}
                 disabled={isDefaultColor(obj.color)}
               >
-                Reset màu
+                ↺ Reset
               </button>
-              <button
-                className="btn btn-secondary btn-sm"
-                onClick={() => {
-                  pushUndo();
-                  updateObject(obj.id, { color: PRINT_OPTIMIZE_PRESET });
-                  showToast('Đã áp dụng tối ưu in Epson');
-                }}
-              >
-                ✨ Tối ưu Epson
-              </button>
+            </div>
+
+            {/* Sliders */}
+            {[
+              { key: 'brightness', label: 'Độ sáng' },
+              { key: 'contrast', label: 'Tương phản' },
+              { key: 'saturation', label: 'Độ bão hòa' },
+              { key: 'temperature', label: 'Nhiệt độ màu' },
+            ].map(({ key, label }) => {
+              const val = obj.color[key as keyof typeof obj.color];
+              return (
+                <div key={key} className="color-slider-row">
+                  <div className="color-slider-header">
+                    <span className="color-label">{label}</span>
+                    <button
+                      type="button"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: val !== 0 ? 'var(--primary)' : 'var(--text-muted)',
+                        fontSize: '11px',
+                        cursor: 'pointer',
+                        padding: 0,
+                        fontWeight: 600,
+                      }}
+                      title="Bấm để đặt lại về 0"
+                      onClick={() => {
+                        pushUndo();
+                        handleColorChange(key, 0);
+                      }}
+                    >
+                      {val > 0 ? `+${val}` : val} {val !== 0 ? '↺' : ''}
+                    </button>
+                  </div>
+                  <input
+                    type="range"
+                    min="-100"
+                    max="100"
+                    value={val}
+                    onChange={(e) => handleColorChange(key, parseInt(e.target.value))}
+                    onMouseUp={handleColorChangeCommit}
+                    onTouchEnd={handleColorChangeCommit}
+                  />
+                </div>
+              );
+            })}
+
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '2px' }}>
+              💡 Màu ảnh trên giấy thay đổi trực tiếp ngay khi bạn kéo thanh trượt.
             </div>
           </div>
         )}
