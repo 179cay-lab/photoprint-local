@@ -51,14 +51,22 @@ function setupAutoUpdater() {
           type: 'info',
           title: 'Cập nhật PhotoPrint Local',
           message: `Đã tải xong bản cập nhật mới (v${info.version})!`,
-          detail: 'Bạn có muốn khởi động lại ứng dụng ngay bây giờ để hoàn tất nâng cấp?',
+          detail: 'Ứng dụng sẽ tự động đóng và nâng cấp lên phiên bản mới ngay bây giờ.',
           buttons: ['Khởi động lại ngay', 'Để sau'],
           defaultId: 0,
           cancelId: 1,
         })
         .then((res) => {
           if (res.response === 0) {
-            autoUpdater.quitAndInstall();
+            // Đóng hẳn cửa sổ để giải phóng file lock hoàn toàn trước khi NSIS ghi đè
+            setImmediate(() => {
+              app.removeAllListeners('window-all-closed');
+              if (mainWindow) {
+                mainWindow.removeAllListeners('close');
+                mainWindow.destroy();
+              }
+              autoUpdater.quitAndInstall(true, true);
+            });
           }
         });
     }
@@ -133,7 +141,14 @@ ipcMain.handle('app:check-for-updates', async () => {
 });
 
 ipcMain.handle('app:quit-and-install', () => {
-  autoUpdater.quitAndInstall();
+  setImmediate(() => {
+    app.removeAllListeners('window-all-closed');
+    if (mainWindow) {
+      mainWindow.removeAllListeners('close');
+      mainWindow.destroy();
+    }
+    autoUpdater.quitAndInstall(true, true);
+  });
 });
 
 app.whenReady().then(() => {

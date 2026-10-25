@@ -1,7 +1,7 @@
 {
   "name": "photoprint-local",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -73,11 +73,13 @@
       ]
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "PhotoPrint Local"
+      "shortcutName": "PhotoPrint Local",
+      "deleteAppDataOnUninstall": false
     }
   }
 }
