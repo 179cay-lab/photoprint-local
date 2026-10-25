@@ -20,9 +20,10 @@ export function Header() {
   const exportProject = useProjectStore((s) => s.exportProject);
   const importProject = useProjectStore((s) => s.importProject);
   const showToast = useProjectStore((s) => s.showToast);
+  const openSettings = useProjectStore((s) => s.openSettings);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [appVersion, setAppVersion] = useState<string>('v1.0.0');
+  const [appVersion, setAppVersion] = useState<string>('v1.1.0');
   const [updateStatus, setUpdateStatus] = useState<UpdateStatusData | null>(null);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState<boolean>(false);
 
@@ -233,6 +234,16 @@ export function Header() {
           title="Xem hướng dẫn in ảnh 3 bước đơn giản"
         >
           ❓ Hướng dẫn
+        </button>
+
+        {/* Settings Dialog Button */}
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          onClick={openSettings}
+          title="Cài đặt mặc định của ứng dụng (Khổ giấy, Viền cắt, Lề an toàn...)"
+        >
+          ⚙️ Cài đặt
         </button>
 
         <span className="object-count">

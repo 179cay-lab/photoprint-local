@@ -39,21 +39,16 @@ export function RightSidebar() {
   const setSpacingMm = useProjectStore((s) => s.setSpacingMm);
   const runAutoLayout = useProjectStore((s) => s.runAutoLayout);
   const autoFitSpacing = useProjectStore((s) => s.autoFitSpacing);
+  const fitObjectsToPaper = useProjectStore((s) => s.fitObjectsToPaper);
+  const openSettings = useProjectStore((s) => s.openSettings);
+  const saveAllSettingsAsDefault = useProjectStore((s) => s.saveAllSettingsAsDefault);
   const showToast = useProjectStore((s) => s.showToast);
 
   const [savedToast, setSavedToast] = useState(false);
   const [showColorAdjust, setShowColorAdjust] = useState(false);
 
   const handleSaveDefault = () => {
-    localStorage.setItem('photoprint_paperSize', paperSize);
-    localStorage.setItem('photoprint_borderEnabled', String(borderEnabled));
-    localStorage.setItem('photoprint_borderWidthMm', String(borderWidthMm));
-    localStorage.setItem('photoprint_borderColor', borderColor);
-    localStorage.setItem('photoprint_marginEnabled', String(marginEnabled));
-    localStorage.setItem('photoprint_marginMm', String(marginMm));
-    localStorage.setItem('photoprint_spacing', String(spacingMm));
-    localStorage.setItem('photoprint_lockRatio', String(lockRatio));
-    showToast('✓ Đã lưu tất cả cài đặt (Khổ giấy, Lề, Viền, Khoảng cách) làm mặc định!');
+    saveAllSettingsAsDefault();
     setSavedToast(true);
     setTimeout(() => setSavedToast(false), 2500);
   };
@@ -81,6 +76,19 @@ export function RightSidebar() {
               </button>
             ))}
           </div>
+
+          {/* Quick Fit to Current Paper */}
+          {objects.length > 0 && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm btn-block"
+              style={{ marginTop: '8px', fontSize: '11px', fontWeight: 600 }}
+              onClick={() => fitObjectsToPaper()}
+              title={`Thu gọn ảnh quá khổ và tự động xếp vừa vặn vào khổ ${paperSize}`}
+            >
+              📐 Thu gọn & dàn vừa khổ {paperSize}
+            </button>
+          )}
         </div>
 
         <div className="divider" />
@@ -249,15 +257,26 @@ export function RightSidebar() {
             <div>• Viền cắt: <strong>{borderEnabled ? `${borderWidthMm} mm` : 'Tắt'}</strong></div>
             <div>• Khoảng cách: <strong>{spacingCm} cm</strong></div>
           </div>
-          <button
-            type="button"
-            className="btn btn-primary btn-block btn-sm"
-            onClick={handleSaveDefault}
-            title="Lưu tất cả cấu hình trên làm mặc định"
-            style={{ fontWeight: 600 }}
-          >
-            {savedToast ? '✓ Đã lưu làm mặc định!' : '💾 Lưu tất cả làm mặc định'}
-          </button>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              style={{ flex: 1, fontWeight: 600 }}
+              onClick={handleSaveDefault}
+              title="Lưu tất cả cấu hình trên làm mặc định"
+            >
+              {savedToast ? '✓ Đã lưu!' : '💾 Lưu nhanh'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              style={{ flex: 1 }}
+              onClick={openSettings}
+              title="Mở hộp thoại cài đặt chi tiết của ứng dụng"
+            >
+              ⚙️ Cài đặt...
+            </button>
+          </div>
         </div>
 
         <div className="divider" />

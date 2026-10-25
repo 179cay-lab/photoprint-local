@@ -4,7 +4,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useProjectStore } from '../../store/useProjectStore';
-import { SIZE_PRESETS } from '../../constants/paper';
+import { SIZE_PRESETS, PAPER_SIZES } from '../../constants/paper';
 import { DEFAULT_COLOR } from '../../types';
 import type { CropData } from '../../types';
 import { cmToMm, mmToCm } from '../../utils/units';
@@ -19,13 +19,30 @@ export function SizePickerDialog() {
   const setLastUsedSize = useProjectStore((s) => s.setLastUsedSize);
   const lastUsedSize = useProjectStore((s) => s.lastUsedSize);
   const openCropEditor = useProjectStore((s) => s.openCropEditor);
+  const paperSize = useProjectStore((s) => s.paperSize);
+  const setPaperSize = useProjectStore((s) => s.setPaperSize);
+  const marginEnabled = useProjectStore((s) => s.marginEnabled);
+  const marginMm = useProjectStore((s) => s.marginMm);
+
+  // Paper boundary measurements
+  const paper = PAPER_SIZES[paperSize];
+  const maxPaperWCm = paper.widthMm / 10;
+  const maxPaperHCm = paper.heightMm / 10;
+  const safeMarginCm = marginEnabled ? marginMm / 10 : 0;
+  const usableWCm = maxPaperWCm - 2 * safeMarginCm;
+  const usableHCm = maxPaperHCm - 2 * safeMarginCm;
 
   // Selected image index if multiple images uploaded
   const [selectedImageIdx, setSelectedImageIdx] = useState<number>(0);
 
   // Size selections (in cm)
-  const initialW = lastUsedSize ? mmToCm(lastUsedSize.widthMm) : 4;
-  const initialH = lastUsedSize ? mmToCm(lastUsedSize.heightMm) : 6;
+  // On A5, if previously saved size is too big (>14.8cm), default to 4x6cm
+  const rawInitialW = lastUsedSize ? mmToCm(lastUsedSize.widthMm) : 4;
+  const rawInitialH = lastUsedSize ? mmToCm(lastUsedSize.heightMm) : 6;
+  const isA5Oversize = paperSize === 'A5' && (rawInitialW > usableWCm && rawInitialW > usableHCm);
+  const initialW = isA5Oversize ? 4 : rawInitialW;
+  const initialH = isA5Oversize ? 6 : rawInitialH;
+
   const [widthCm, setWidthCm] = useState<number>(initialW);
   const [heightCm, setHeightCm] = useState<number>(initialH);
   const [widthInput, setWidthInput] = useState<string>(String(initialW));
@@ -356,6 +373,32 @@ export function SizePickerDialog() {
         </div>
 
         <div className="modal-body">
+          {/* Current Paper Info Bar with quick switch */}
+          <div className="size-picker-paper-badge">
+            <span>
+              📄 Giấy in đang chọn: <strong>Khổ {paperSize}</strong> ({maxPaperWCm} × {maxPaperHCm} cm)
+            </span>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '11px', color: '#1e40af' }}>Đổi khổ:</span>
+              <button
+                type="button"
+                className={`btn btn-sm ${paperSize === 'A4' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
+                onClick={() => setPaperSize('A4')}
+              >
+                A4
+              </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${paperSize === 'A5' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ padding: '2px 8px', fontSize: '11px', height: '24px' }}
+                onClick={() => setPaperSize('A5')}
+              >
+                A5
+              </button>
+            </div>
+          </div>
+
           {/* Multiple image strip if more than 1 image */}
           {pendingImages.length > 1 && (
             <div className="pending-preview-strip">
@@ -653,6 +696,15 @@ export function SizePickerDialog() {
                 <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '6px 0 0' }}>
                   💡 Bạn có thể nhập bất kỳ kích thước nào (vd: 15×7, 10×15, 3×4,...), khung ảnh bên trái sẽ tự động cập nhật đúng tỷ lệ để bạn crop theo ý.
                 </p>
+
+                {/* Warning if photo size exceeds current paper sheet */}
+                {((printWidthCm > maxPaperWCm && printWidthCm > maxPaperHCm) ||
+                  (printHeightCm > maxPaperHCm && printHeightCm > maxPaperWCm) ||
+                  (printWidthCm > usableWCm && printHeightCm > usableHCm && printWidthCm > usableHCm && printHeightCm > usableWCm)) && (
+                  <div className="size-warning-box">
+                    <span>⚠️ Kích thước ({printWidthCm}×{printHeightCm} cm) lớn hơn khổ giấy {paperSize}! Ảnh có thể bị tràn ra ngoài lề khi in. Bạn có thể đổi sang khổ A4 hoặc giảm bớt kích thước.</span>
+                  </div>
+                )}
               </div>
 
               {/* Quantity */}

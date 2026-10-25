@@ -10,6 +10,7 @@ import { BottomBar } from './components/Canvas/BottomBar';
 import { SizePickerDialog } from './components/Dialogs/SizePickerDialog';
 import { CropEditor } from './components/Dialogs/CropEditor';
 import { PrintPreview } from './components/Dialogs/PrintPreview';
+import { SettingsDialog } from './components/Dialogs/SettingsDialog';
 import { PrintContainer } from './components/Print/PrintContainer';
 import { useProjectStore } from './store/useProjectStore';
 import { useKeyboard } from './hooks/useKeyboard';
@@ -21,6 +22,7 @@ function App() {
   const showSizePicker = useProjectStore((s) => s.showSizePicker);
   const showCropEditor = useProjectStore((s) => s.showCropEditor);
   const showPreview = useProjectStore((s) => s.showPreview);
+  const showSettings = useProjectStore((s) => s.showSettings);
 
   return (
     <>
@@ -38,6 +40,7 @@ function App() {
       {showSizePicker && <SizePickerDialog />}
       {showCropEditor && <CropEditor />}
       {showPreview && <PrintPreview />}
+      {showSettings && <SettingsDialog />}
 
       {/* Hidden print container */}
       <PrintContainer />

@@ -390,12 +390,83 @@
   background: #2563eb;
   border: 2px solid #ffffff;
   border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: transform 0.1s, background-color 0.1s;
+  z-index: 10;
+}
+
+.crop-corner-handle:hover {
+  transform: scale(1.3);
+  background: #3b82f6;
 }
 
 .crop-corner-tl { top: -7px; left: -7px; cursor: nwse-resize; }
 .crop-corner-tr { top: -7px; right: -7px; cursor: nesw-resize; }
 .crop-corner-bl { bottom: -7px; left: -7px; cursor: nesw-resize; }
 .crop-corner-br { bottom: -7px; right: -7px; cursor: nwse-resize; }
+
+/* Edge handles for Freeform Crop */
+.crop-edge-handle {
+  position: absolute;
+  background: #2563eb;
+  border: 1.5px solid #ffffff;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  z-index: 9;
+  transition: transform 0.1s, background-color 0.1s;
+}
+
+.crop-edge-handle:hover {
+  background: #3b82f6;
+}
+
+.crop-edge-t {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 8px;
+  cursor: ns-resize;
+}
+.crop-edge-t:hover {
+  transform: translateX(-50%) scaleY(1.3);
+}
+
+.crop-edge-b {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 8px;
+  cursor: ns-resize;
+}
+.crop-edge-b:hover {
+  transform: translateX(-50%) scaleY(1.3);
+}
+
+.crop-edge-l {
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 32px;
+  cursor: ew-resize;
+}
+.crop-edge-l:hover {
+  transform: translateY(-50%) scaleX(1.3);
+}
+
+.crop-edge-r {
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 32px;
+  cursor: ew-resize;
+}
+.crop-edge-r:hover {
+  transform: translateY(-50%) scaleX(1.3);
+}
 
 .crop-toolbar {
   display: flex;
@@ -449,3 +520,108 @@
   font-size: 20px;
   flex-shrink: 0;
 }
+
+/* ============================================================
+   Settings Dialog Styles
+   ============================================================ */
+.settings-modal {
+  width: 680px;
+  max-width: 95vw;
+}
+
+.settings-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: 70vh;
+}
+
+.settings-intro-text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  background: var(--bg);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  line-height: 1.5;
+}
+
+.settings-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.settings-section-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+}
+
+.settings-label-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.settings-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.settings-desc {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.settings-btn-toggle {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Paper Badge and Warning Box in SizePicker */
+.size-picker-paper-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  background: var(--primary-50);
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+.size-warning-box {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #b45309;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: modalFadeIn 0.2s ease;
+}
+

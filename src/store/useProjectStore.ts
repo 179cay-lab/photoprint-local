@@ -22,6 +22,7 @@ interface ProjectState {
   // Paper
   paperSize: PaperSizeType;
   setPaperSize: (size: PaperSizeType) => void;
+  fitObjectsToPaper: (targetSize?: PaperSizeType) => void;
 
   // Objects
   objects: PrintObject[];
@@ -141,6 +142,23 @@ interface ProjectState {
   showPreview: boolean;
   setShowPreview: (show: boolean) => void;
 
+  // Settings dialog & defaults
+  showSettings: boolean;
+  openSettings: () => void;
+  closeSettings: () => void;
+  saveAllSettingsAsDefault: (settings?: {
+    paperSize?: PaperSizeType;
+    unit?: UnitType;
+    borderEnabled?: boolean;
+    borderWidthMm?: number;
+    borderColor?: string;
+    marginEnabled?: boolean;
+    marginMm?: number;
+    spacingMm?: number;
+    lockRatio?: boolean;
+  }) => void;
+  resetDefaultSettings: () => void;
+
   // Project save/open (.photoprint)
   exportProject: () => void;
   importProject: (jsonData: string) => void;
@@ -156,9 +174,106 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   // ---- Paper ----
   paperSize: (localStorage.getItem('photoprint_paperSize') as PaperSizeType) || 'A4',
   setPaperSize: (size) => {
+    const currentPaper = get().paperSize;
+    if (currentPaper === size) return;
+
     localStorage.setItem('photoprint_paperSize', size);
     get().pushUndo();
-    set({ paperSize: size });
+
+    const currentObjects = get().objects;
+    const newPaper = PAPER_SIZES[size];
+    const margin = get().marginEnabled ? get().marginMm : 0;
+    const maxAllowedW = Math.max(10, newPaper.widthMm - 2 * margin);
+    const maxAllowedH = Math.max(10, newPaper.heightMm - 2 * margin);
+
+    let needsReformat = false;
+    const adjustedObjects = currentObjects.map((obj) => {
+      let w = obj.widthMm;
+      let h = obj.heightMm;
+
+      // If photo itself is larger than the printable paper area (crucial when switching A4 -> A5!)
+      if (w > maxAllowedW || h > maxAllowedH) {
+        needsReformat = true;
+        const ratio = w / (h || 1);
+        if (w / maxAllowedW > h / maxAllowedH) {
+          w = maxAllowedW;
+          h = maxAllowedW / ratio;
+        } else {
+          h = maxAllowedH;
+          w = maxAllowedH * ratio;
+        }
+      }
+
+      // Check if position is out of paper bounds
+      if (obj.xMm + w > newPaper.widthMm || obj.yMm + h > newPaper.heightMm) {
+        needsReformat = true;
+      }
+
+      return {
+        ...obj,
+        widthMm: Number(w.toFixed(1)),
+        heightMm: Number(h.toFixed(1)),
+      };
+    });
+
+    if (needsReformat && adjustedObjects.length > 0) {
+      const layoutRes = autoLayout(
+        adjustedObjects,
+        newPaper.widthMm,
+        newPaper.heightMm,
+        get().spacingMm,
+        margin
+      );
+      set({ paperSize: size, objects: layoutRes.objects });
+      get().showToast(`✓ Đã đổi sang khổ ${size} & tự động xếp vừa trang!`);
+    } else {
+      set({ paperSize: size });
+      get().showToast(`Đã chuyển sang khổ ${size}`);
+    }
+  },
+
+  fitObjectsToPaper: (targetSize?: PaperSizeType) => {
+    const state = get();
+    const size = targetSize || state.paperSize;
+    const paper = PAPER_SIZES[size];
+    const margin = state.marginEnabled ? state.marginMm : 0;
+    const maxAllowedW = Math.max(10, paper.widthMm - 2 * margin);
+    const maxAllowedH = Math.max(10, paper.heightMm - 2 * margin);
+
+    if (state.objects.length === 0) return;
+
+    state.pushUndo();
+
+    const adjusted = state.objects.map((obj) => {
+      let w = obj.widthMm;
+      let h = obj.heightMm;
+      if (w > maxAllowedW || h > maxAllowedH) {
+        const ratio = w / (h || 1);
+        if (w / maxAllowedW > h / maxAllowedH) {
+          w = maxAllowedW;
+          h = maxAllowedW / ratio;
+        } else {
+          h = maxAllowedH;
+          w = maxAllowedH * ratio;
+        }
+      }
+      return {
+        ...obj,
+        widthMm: Number(w.toFixed(1)),
+        heightMm: Number(h.toFixed(1)),
+      };
+    });
+
+    const layoutRes = autoLayout(
+      adjusted,
+      paper.widthMm,
+      paper.heightMm,
+      state.spacingMm,
+      margin
+    );
+
+    set({ objects: layoutRes.objects });
+    state.showToast(`✓ Đã thu gọn và dàn đều các ảnh vừa vặn khổ ${size}`);
   },
 
   // ---- Objects ----
@@ -779,6 +894,74 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   // ---- Print Preview ----
   showPreview: false,
   setShowPreview: (show) => set({ showPreview: show }),
+
+  // ---- Settings Dialog & Defaults ----
+  showSettings: false,
+  openSettings: () => set({ showSettings: true }),
+  closeSettings: () => set({ showSettings: false }),
+
+  saveAllSettingsAsDefault: (customSettings) => {
+    const state = get();
+    const paperSize = customSettings?.paperSize ?? state.paperSize;
+    const unit = customSettings?.unit ?? state.unit;
+    const borderEnabled = customSettings?.borderEnabled ?? state.borderEnabled;
+    const borderWidthMm = customSettings?.borderWidthMm ?? state.borderWidthMm;
+    const borderColor = customSettings?.borderColor ?? state.borderColor;
+    const marginEnabled = customSettings?.marginEnabled ?? state.marginEnabled;
+    const marginMm = customSettings?.marginMm ?? state.marginMm;
+    const spacingMm = customSettings?.spacingMm ?? state.spacingMm;
+    const lockRatio = customSettings?.lockRatio ?? state.lockRatio;
+
+    localStorage.setItem('photoprint_paperSize', paperSize);
+    localStorage.setItem('photoprint_unit', unit);
+    localStorage.setItem('photoprint_borderEnabled', String(borderEnabled));
+    localStorage.setItem('photoprint_borderWidthMm', String(borderWidthMm));
+    localStorage.setItem('photoprint_borderColor', borderColor);
+    localStorage.setItem('photoprint_marginEnabled', String(marginEnabled));
+    localStorage.setItem('photoprint_marginMm', String(marginMm));
+    localStorage.setItem('photoprint_spacing', String(spacingMm));
+    localStorage.setItem('photoprint_lockRatio', String(lockRatio));
+
+    set({
+      paperSize,
+      unit,
+      borderEnabled,
+      borderWidthMm,
+      borderColor,
+      marginEnabled,
+      marginMm,
+      spacingMm,
+      lockRatio,
+    });
+
+    state.showToast('✓ Đã lưu tất cả cài đặt làm mặc định khi mở ứng dụng!');
+  },
+
+  resetDefaultSettings: () => {
+    localStorage.removeItem('photoprint_paperSize');
+    localStorage.removeItem('photoprint_unit');
+    localStorage.removeItem('photoprint_borderEnabled');
+    localStorage.removeItem('photoprint_borderWidthMm');
+    localStorage.removeItem('photoprint_borderColor');
+    localStorage.removeItem('photoprint_marginEnabled');
+    localStorage.removeItem('photoprint_marginMm');
+    localStorage.removeItem('photoprint_spacing');
+    localStorage.removeItem('photoprint_lockRatio');
+
+    set({
+      paperSize: 'A4',
+      unit: 'cm',
+      borderEnabled: true,
+      borderWidthMm: 0.25,
+      borderColor: '#000000',
+      marginEnabled: true,
+      marginMm: 5,
+      spacingMm: 2,
+      lockRatio: true,
+    });
+
+    get().showToast('✓ Đã khôi phục cài đặt gốc của ứng dụng');
+  },
 
   // ---- Project Save / Open ----
   exportProject: () => {
