@@ -23,7 +23,7 @@ export function Header() {
   const openSettings = useProjectStore((s) => s.openSettings);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [appVersion, setAppVersion] = useState<string>('v1.1.1');
+  const [appVersion, setAppVersion] = useState<string>('v1.1.2');
   const [updateStatus, setUpdateStatus] = useState<UpdateStatusData | null>(null);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState<boolean>(false);
 

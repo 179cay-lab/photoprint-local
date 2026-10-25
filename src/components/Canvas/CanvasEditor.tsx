@@ -10,6 +10,7 @@ import { mmToPx, pxToMm } from '../../utils/units';
 import { colorDataToCSSFilter, isDefaultColor } from '../../utils/color';
 import { loadImageFile, isAcceptedImage } from '../../utils/image';
 import { Ruler } from './Ruler';
+import { FloatingToolbar } from './FloatingToolbar';
 import './Canvas.css';
 
 export function CanvasEditor() {
@@ -39,6 +40,13 @@ export function CanvasEditor() {
   const paper = PAPER_SIZES[paperSize];
   const canvasWidthPx = mmToPx(paper.widthMm);
   const canvasHeightPx = mmToPx(paper.heightMm);
+
+  const singleSelectedObj =
+    (selectedObjectIds.length === 1
+      ? objects.find((o) => o.id === selectedObjectIds[0])
+      : selectedObjectIds.length === 0 && selectedObjectId
+      ? objects.find((o) => o.id === selectedObjectId)
+      : null) || null;
 
   // Helper to extract objectId safely
   const getObjId = (target: unknown): string | null => {
@@ -532,6 +540,15 @@ export function CanvasEditor() {
                   Lề an toàn: {(marginMm / 10).toFixed(1)} cm
                 </span>
               </div>
+            )}
+
+            {/* Floating Toolbar on Selected Photo */}
+            {singleSelectedObj && (
+              <FloatingToolbar
+                selectedObj={singleSelectedObj}
+                zoom={zoom}
+                canvasWidthPx={canvasWidthPx}
+              />
             )}
           </div>
         </div>
