@@ -5,6 +5,7 @@
 import React from 'react';
 import { useProjectStore } from '../../store/useProjectStore';
 import { mmToPx } from '../../utils/units';
+import { getRotatedBoundingBox } from '../../utils/geometry';
 import type { PrintObject } from '../../types';
 import './Canvas.css';
 
@@ -20,35 +21,37 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   canvasWidthPx,
 }) => {
   const openCropEditor = useProjectStore((s) => s.openCropEditor);
-  const updateObject = useProjectStore((s) => s.updateObject);
+  const rotateObject = useProjectStore((s) => s.rotateObject);
   const duplicateSelected = useProjectStore((s) => s.duplicateSelected);
   const removeSelected = useProjectStore((s) => s.removeSelected);
   const lockRatio = useProjectStore((s) => s.lockRatio);
   const toggleLockRatio = useProjectStore((s) => s.toggleLockRatio);
-  const pushUndo = useProjectStore((s) => s.pushUndo);
   const showToast = useProjectStore((s) => s.showToast);
 
-  // Position calculation in screen pixels
-  const objLeftPx = mmToPx(selectedObj.xMm) * zoom;
-  const objTopPx = mmToPx(selectedObj.yMm) * zoom;
-  const objWidthPx = mmToPx(selectedObj.widthMm) * zoom;
-  const objHeightPx = mmToPx(selectedObj.heightMm) * zoom;
+  // Accurate bounding box calculation in screen pixels for any rotation angle
+  const bbox = getRotatedBoundingBox(
+    selectedObj.xMm,
+    selectedObj.yMm,
+    selectedObj.widthMm,
+    selectedObj.heightMm,
+    selectedObj.rotation
+  );
 
-  // Center horizontally over the object
-  const rawCenterXPx = objLeftPx + objWidthPx / 2;
+  const rawCenterXPx = mmToPx(bbox.centerX) * zoom;
   // Clamp within paper width with 130px padding so it doesn't get clipped
   const centerXPx = Math.max(130, Math.min(canvasWidthPx * zoom - 130, rawCenterXPx));
 
+  const topBboxPx = mmToPx(bbox.minY) * zoom;
+  const bottomBboxPx = mmToPx(bbox.maxY) * zoom;
   // If there's enough space above the photo (> 42px), place it above; otherwise place it below
-  const isAbove = objTopPx >= 44;
-  const topPx = isAbove ? objTopPx - 42 : objTopPx + objHeightPx + 8;
+  const isAbove = topBboxPx >= 44;
+  const topPx = isAbove ? topBboxPx - 42 : bottomBboxPx + 8;
 
   const handleRotate90 = (e: React.MouseEvent) => {
     e.stopPropagation();
-    pushUndo();
-    const newRotation = (selectedObj.rotation + 90) % 360;
-    updateObject(selectedObj.id, { rotation: newRotation });
-    showToast(`Đã xoay 90° (${newRotation}°)`);
+    rotateObject(selectedObj.id, 90);
+    const newRot = ((selectedObj.rotation + 90) % 360 + 360) % 360;
+    showToast(`Đã xoay quanh tâm 90° (${newRot}°)`);
   };
 
   const handleCrop = (e: React.MouseEvent) => {

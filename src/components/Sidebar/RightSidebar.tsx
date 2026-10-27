@@ -19,6 +19,8 @@ export function RightSidebar() {
   const clipboard = useProjectStore((s) => s.clipboard);
   const pushUndo = useProjectStore((s) => s.pushUndo);
   const openCropEditor = useProjectStore((s) => s.openCropEditor);
+  const rotateObject = useProjectStore((s) => s.rotateObject);
+  const fitSelectedToFullPaper = useProjectStore((s) => s.fitSelectedToFullPaper);
 
   // Border & Aspect Ratio lock
   const borderEnabled = useProjectStore((s) => s.borderEnabled);
@@ -431,8 +433,7 @@ export function RightSidebar() {
   };
 
   const handleRotation = (deg: number) => {
-    pushUndo();
-    updateObject(obj.id, { rotation: (obj.rotation + deg) % 360 });
+    rotateObject(obj.id, deg);
   };
 
   const handleColorChange = (key: string, value: number) => {
@@ -553,13 +554,24 @@ export function RightSidebar() {
               <button className="btn btn-secondary btn-sm" onClick={handleCrop} title="Cắt lại khung hình (Crop)">
                 ✂️ Crop
               </button>
-              <button className="btn btn-secondary btn-sm" onClick={() => handleRotation(-90)} title="Xoay trái 90°">
+              <button className="btn btn-secondary btn-sm" onClick={() => handleRotation(-90)} title="Xoay trái 90° quanh tâm ảnh">
                 ↺ 90°
               </button>
-              <button className="btn btn-secondary btn-sm" onClick={() => handleRotation(90)} title="Xoay phải 90°">
+              <button className="btn btn-secondary btn-sm" onClick={() => handleRotation(90)} title="Xoay phải 90° quanh tâm ảnh">
                 ↻ 90°
               </button>
             </div>
+
+            {/* Quick full paper fit */}
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm btn-block"
+              style={{ marginTop: '6px', fontSize: '11px', fontWeight: 600 }}
+              onClick={fitSelectedToFullPaper}
+              title={`Căn ảnh phủ kín toàn bộ mặt giấy ${paperSize} (In tràn viền không chừa lề)`}
+            >
+              🖼️ Dàn tràn khổ {paperSize} (Full viền)
+            </button>
           </div>
 
           <div className="divider" />

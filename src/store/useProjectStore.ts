@@ -11,6 +11,7 @@ import type {
 } from '../types';
 import { PAPER_SIZES, DEFAULT_SPACING_MM } from '../constants/paper';
 import { autoLayout, calculateOptimalSpacing } from '../utils/layout';
+import { getRotatedPositionAroundCenter } from '../utils/geometry';
 
 // ---- Undo/Redo State Snapshot ----
 interface UndoSnapshot {
@@ -36,6 +37,8 @@ interface ProjectState {
   removeObject: (id: string) => void;
   removeSelected: () => void;
   updateObject: (id: string, updates: Partial<PrintObject>) => void;
+  rotateObject: (id: string, deltaDeg: number) => void;
+  fitSelectedToFullPaper: () => void;
   clearAll: () => void;
 
   // Duplicate
@@ -330,6 +333,64 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     set((s) => ({
       objects: s.objects.map((o) => (o.id === id ? { ...o, ...updates } : o)),
     }));
+  },
+
+  rotateObject: (id, deltaDeg) => {
+    const state = get();
+    const obj = state.objects.find((o) => o.id === id);
+    if (!obj) return;
+
+    state.pushUndo();
+    const newPos = getRotatedPositionAroundCenter(
+      obj.xMm,
+      obj.yMm,
+      obj.widthMm,
+      obj.heightMm,
+      obj.rotation,
+      deltaDeg
+    );
+
+    set((s) => ({
+      objects: s.objects.map((o) =>
+        o.id === id
+          ? {
+              ...o,
+              ...newPos,
+            }
+          : o
+      ),
+    }));
+  },
+
+  fitSelectedToFullPaper: () => {
+    const state = get();
+    const id = state.selectedObjectId || (state.selectedObjectIds && state.selectedObjectIds[0]);
+    if (!id) return;
+    const obj = state.objects.find((o) => o.id === id);
+    if (!obj) return;
+
+    state.pushUndo();
+    const paper = PAPER_SIZES[state.paperSize];
+
+    // Set photo to full paper dimensions without any offset (borderless)
+    set((s) => ({
+      objects: s.objects.map((o) =>
+        o.id === id
+          ? {
+              ...o,
+              xMm: 0,
+              yMm: 0,
+              widthMm: paper.widthMm,
+              heightMm: paper.heightMm,
+              rotation: 0,
+            }
+          : o
+      ),
+      marginEnabled: false, // Turn off safe margin guide so user sees clean full bleed
+    }));
+    get().showToast(
+      `Đã căn tràn toàn khổ ${state.paperSize} (${paper.widthMm / 10}×${paper.heightMm / 10}cm). Khi in nhớ chọn "Borderless" (In tràn lề)!`
+    );
   },
 
   clearAll: () => {
