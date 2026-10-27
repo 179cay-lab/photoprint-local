@@ -65,7 +65,7 @@ function setupAutoUpdater() {
                 mainWindow.removeAllListeners('close');
                 mainWindow.destroy();
               }
-              autoUpdater.quitAndInstall(true, true);
+              autoUpdater.quitAndInstall(false, true);
             });
           }
         });
